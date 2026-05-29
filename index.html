@@ -1,34 +1,240 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <meta charset="utf-8">
-    <title>Redirecting...</title>
-    <script>
-        // --- DAFTAR LINK KAMU DI SINI ---
-        const urls = {
-            "fb": "https://facebook.com/username_kamu",
-            "ig": "https://instagram.com/username_kamu",
-            "web": "https://blog-pribadi-kamu.com",
-            "portfolio": "https://linkedin.com/in/username_kamu"
-        };
-        // --------------------------------
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-        // Mengambil keyword dari URL (misal: username.github.io/go/ig -> mengambil "ig")
-        const path = window.location.pathname.replace(/\/$/, "").split("/").pop();
+<title>ShortLink App</title>
 
-        // Cek apakah keyword ada di daftar
-        if (urls[path]) {
-            window.location.href = urls[path];
-        } else {
-            // Jika link tidak terdaftar, arahkan ke halaman utama atau tampilkan pesan
-            document.body.innerHTML = "<h1>Link tidak ditemukan!</h1><p>Kamu akan dialihkan ke halaman utama...</p>";
-            setTimeout(() => {
-                window.location.href = "https://" + window.location.hostname;
-            }, 3000);
-        }
-    </script>
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#0f172a;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    padding:20px;
+}
+
+.container{
+    background:#1e293b;
+    width:100%;
+    max-width:500px;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 0 20px rgba(0,0,0,0.3);
+}
+
+h1{
+    text-align:center;
+    margin-bottom:10px;
+    font-size:32px;
+}
+
+.desc{
+    text-align:center;
+    color:#cbd5e1;
+    margin-bottom:25px;
+}
+
+input{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    margin-bottom:15px;
+    font-size:16px;
+    outline:none;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    background:#3b82f6;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    background:#2563eb;
+}
+
+.result{
+    margin-top:25px;
+    background:#0f172a;
+    padding:15px;
+    border-radius:12px;
+    display:none;
+}
+
+.result a{
+    color:#38bdf8;
+    word-break:break-all;
+}
+
+.copy-btn{
+    margin-top:15px;
+    background:#10b981;
+}
+
+.copy-btn:hover{
+    background:#059669;
+}
+
+.footer{
+    margin-top:20px;
+    text-align:center;
+    color:#94a3b8;
+    font-size:13px;
+}
+</style>
 </head>
+
 <body>
-    <p>Sedang mengalihkan, mohon tunggu...</p>
+
+<div class="container">
+
+    <h1>ShortLink</h1>
+
+    <p class="desc">
+        Penyingkat tautan modern untuk GitHub Pages
+    </p>
+
+    <input 
+        type="url" 
+        id="longUrl" 
+        placeholder="Masukkan URL panjang..."
+    />
+
+    <button onclick="shortenUrl()">
+        Shorten URL
+    </button>
+
+    <div class="result" id="resultBox">
+
+        <p>Link Pendek:</p>
+
+        <a href="#" target="_blank" id="shortLink"></a>
+
+        <button class="copy-btn" onclick="copyLink()">
+            Copy Link
+        </button>
+
+    </div>
+
+    <div class="footer">
+        Web App Shortener • GitHub Ready
+    </div>
+
+</div>
+
+<script>
+
+function generateCode(length = 6){
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+
+    for(let i = 0; i < length; i++){
+        result += chars.charAt(
+            Math.floor(Math.random() * chars.length)
+        );
+    }
+
+    return result;
+}
+
+function shortenUrl(){
+
+    const urlInput = document.getElementById('longUrl');
+    const longUrl = urlInput.value.trim();
+
+    if(!longUrl){
+        alert('Masukkan URL terlebih dahulu!');
+        return;
+    }
+
+    // Validasi URL
+    try{
+        new URL(longUrl);
+    }catch{
+        alert('URL tidak valid!');
+        return;
+    }
+
+    const shortCode = generateCode();
+
+    // Simpan ke localStorage
+    localStorage.setItem(shortCode, longUrl);
+
+    // URL github pages
+    const baseUrl = window.location.origin + window.location.pathname;
+
+    const shortUrl = `${baseUrl}?s=${shortCode}`;
+
+    document.getElementById('resultBox').style.display = 'block';
+
+    const shortLink = document.getElementById('shortLink');
+
+    shortLink.href = shortUrl;
+    shortLink.innerText = shortUrl;
+}
+
+// Redirect otomatis
+(function(){
+
+    const params = new URLSearchParams(window.location.search);
+
+    const shortCode = params.get('s');
+
+    if(shortCode){
+
+        const originalUrl = localStorage.getItem(shortCode);
+
+        if(originalUrl){
+            window.location.href = originalUrl;
+        }else{
+            document.body.innerHTML = `
+                <div style="
+                    display:flex;
+                    justify-content:center;
+                    align-items:center;
+                    height:100vh;
+                    background:#0f172a;
+                    color:white;
+                    font-family:Arial;
+                    flex-direction:column;
+                ">
+                    <h1>404</h1>
+                    <p>Link tidak ditemukan</p>
+                </div>
+            `;
+        }
+    }
+
+})();
+
+function copyLink(){
+
+    const text = document.getElementById('shortLink').innerText;
+
+    navigator.clipboard.writeText(text);
+
+    alert('Link berhasil dicopy!');
+}
+
+</script>
+
 </body>
 </html>
