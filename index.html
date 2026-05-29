@@ -1,5 +1,6 @@
+```html
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,57 +17,64 @@
 }
 
 body{
-    background:
-    linear-gradient(135deg,#020617,#0f172a,#1e293b);
     min-height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
+    background:
+    linear-gradient(
+        135deg,
+        #020617,
+        #0f172a,
+        #1e293b
+    );
     overflow:hidden;
     color:white;
+    padding:20px;
 }
 
 .container{
     width:100%;
-    max-width:450px;
+    max-width:460px;
     background:rgba(255,255,255,0.05);
-    backdrop-filter:blur(15px);
     border:1px solid rgba(255,255,255,0.1);
-    border-radius:25px;
+    backdrop-filter:blur(18px);
+    border-radius:28px;
     padding:35px;
     box-shadow:
-    0 0 30px rgba(0,0,0,0.4);
+    0 10px 40px rgba(0,0,0,0.4);
 }
 
-h1{
+.logo{
     text-align:center;
+    font-size:40px;
+    font-weight:bold;
     margin-bottom:10px;
-    font-size:38px;
 }
 
 .desc{
     text-align:center;
     color:#cbd5e1;
-    margin-bottom:25px;
+    margin-bottom:30px;
 }
 
 input{
     width:100%;
-    padding:16px;
+    padding:17px;
     border:none;
+    border-radius:16px;
     outline:none;
-    border-radius:14px;
     margin-bottom:15px;
-    background:#ffffff;
     font-size:15px;
 }
 
 button{
     width:100%;
-    padding:16px;
+    padding:17px;
     border:none;
-    border-radius:14px;
-    background:linear-gradient(
+    border-radius:16px;
+    background:
+    linear-gradient(
         135deg,
         #3b82f6,
         #2563eb
@@ -84,14 +92,24 @@ button:hover{
 .result{
     margin-top:20px;
     background:rgba(0,0,0,0.3);
-    padding:18px;
-    border-radius:14px;
+    border-radius:16px;
+    padding:20px;
     display:none;
 }
 
 .result a{
     color:#38bdf8;
     word-break:break-all;
+}
+
+.copy-btn{
+    margin-top:15px;
+    background:
+    linear-gradient(
+        135deg,
+        #10b981,
+        #059669
+    );
 }
 
 .redirect-box{
@@ -101,11 +119,11 @@ button:hover{
 .loader{
     width:90px;
     height:90px;
+    border-radius:50%;
     border:6px solid rgba(255,255,255,0.1);
     border-top:6px solid #3b82f6;
-    border-radius:50%;
-    margin:0 auto 25px;
     animation:spin 1s linear infinite;
+    margin:0 auto 25px;
 }
 
 @keyframes spin{
@@ -124,14 +142,15 @@ button:hover{
 }
 
 .bar{
-    height:100%;
     width:0%;
-    background:linear-gradient(
+    height:100%;
+    background:
+    linear-gradient(
         90deg,
         #38bdf8,
         #2563eb
     );
-    animation:load 4s linear forwards;
+    animation:load 1s linear forwards;
 }
 
 @keyframes load{
@@ -141,9 +160,16 @@ button:hover{
 }
 
 .small{
-    margin-top:15px;
     color:#94a3b8;
+    margin-top:15px;
     font-size:14px;
+}
+
+.footer{
+    margin-top:25px;
+    text-align:center;
+    color:#64748b;
+    font-size:13px;
 }
 
 </style>
@@ -153,16 +179,18 @@ button:hover{
 
 <div class="container" id="mainContainer">
 
-<h1>ShortLink</h1>
+<div class="logo">
+ShortLink
+</div>
 
 <p class="desc">
-Penyingkat tautan modern 🚀
+Modern URL Shortener 🚀
 </p>
 
 <input
 type="url"
 id="urlInput"
-placeholder="Masukkan URL panjang..."
+placeholder="Paste your long URL here..."
 >
 
 <button onclick="createShortLink()">
@@ -171,19 +199,28 @@ Shorten URL
 
 <div class="result" id="resultBox">
 
-<p>Short URL:</p>
+<p>Your Short URL:</p>
 
 <br>
 
 <a href="#" target="_blank" id="shortUrl"></a>
 
+<button class="copy-btn" onclick="copyLink()">
+Copy Link
+</button>
+
+</div>
+
+<div class="footer">
+Powered by Firebase & GitHub Pages
 </div>
 
 </div>
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
 getDatabase,
@@ -191,18 +228,28 @@ ref,
 set,
 get,
 child
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
 
-  apiKey: "AIzaSyAFEqtDXNJI-O1Yn8atXjuDCAGRoQB3Y2Q",
-  authDomain: "teknodia.firebaseapp.com",
-  projectId: "teknodia",
-  storageBucket: "teknodia.firebasestorage.app",
-  messagingSenderId: "4635381861",
-  appId: "1:4635381861:web:d3a7b001d17fca9e37b68c",
-  measurementId: "G-WVXTM4Y951"
+apiKey: "AIzaSyAFEqtDXNJI-O1Yn8atXjuDCAGRoQB3Y2Q",
+
+authDomain: "teknodia.firebaseapp.com",
+
+databaseURL:
+"https://teknodia-default-rtdb.firebaseio.com",
+
+projectId: "teknodia",
+
+storageBucket: "teknodia.firebasestorage.app",
+
+messagingSenderId: "4635381861",
+
+appId:
+"1:4635381861:web:d3a7b001d17fca9e37b68c",
+
+measurementId: "G-WVXTM4Y951"
 
 };
 
@@ -236,7 +283,7 @@ document.getElementById("urlInput").value.trim();
 
 if(!url){
 
-alert("Masukkan URL!");
+alert("Please enter URL");
 return;
 
 }
@@ -247,7 +294,7 @@ new URL(url);
 
 }catch{
 
-alert("URL tidak valid!");
+alert("Invalid URL");
 return;
 
 }
@@ -279,6 +326,19 @@ shortUrl.innerText = shortLink;
 
 };
 
+window.copyLink = function(){
+
+const text =
+document.getElementById(
+"shortUrl"
+).innerText;
+
+navigator.clipboard.writeText(text);
+
+alert("Copied!");
+
+};
+
 async function redirectLink(){
 
 const params =
@@ -298,10 +358,10 @@ document.getElementById(
 
 <div class="loader"></div>
 
-<h1>Preparing Link...</h1>
+<h1>Preparing Destination...</h1>
 
 <p class="small">
-Mohon tunggu sebentar 🚀
+Redirecting you safely 🚀
 </p>
 
 <div class="progress">
@@ -326,7 +386,7 @@ setTimeout(()=>{
 
 window.location.href = data.url;
 
-},4000);
+},1000);
 
 }else{
 
@@ -336,8 +396,12 @@ document.getElementById(
 
 <h1>404</h1>
 
-<p style="text-align:center;margin-top:15px;">
-Link tidak ditemukan
+<p style="
+margin-top:15px;
+text-align:center;
+color:#cbd5e1;
+">
+Link not found
 </p>
 
 `;
@@ -352,3 +416,4 @@ redirectLink();
 
 </body>
 </html>
+```
