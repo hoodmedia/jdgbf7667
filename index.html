@@ -1,20 +1,17 @@
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>ShortLink App</title>
+<title>Firebase URL Shortener</title>
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, sans-serif;
-}
 
 body{
+    margin:0;
+    font-family:Arial;
     background:#0f172a;
     color:white;
     display:flex;
@@ -25,58 +22,45 @@ body{
 }
 
 .container{
-    background:#1e293b;
     width:100%;
     max-width:500px;
+    background:#1e293b;
     padding:30px;
     border-radius:20px;
-    box-shadow:0 0 20px rgba(0,0,0,0.3);
 }
 
 h1{
     text-align:center;
-    margin-bottom:10px;
-    font-size:32px;
-}
-
-.desc{
-    text-align:center;
-    color:#cbd5e1;
-    margin-bottom:25px;
 }
 
 input{
     width:100%;
     padding:15px;
+    margin-top:15px;
     border:none;
-    border-radius:12px;
-    margin-bottom:15px;
-    font-size:16px;
+    border-radius:10px;
     outline:none;
+    font-size:16px;
 }
 
 button{
     width:100%;
     padding:15px;
+    margin-top:15px;
     border:none;
-    border-radius:12px;
+    border-radius:10px;
     background:#3b82f6;
     color:white;
-    font-size:16px;
     cursor:pointer;
-    transition:0.3s;
-}
-
-button:hover{
-    background:#2563eb;
+    font-size:16px;
 }
 
 .result{
-    margin-top:25px;
+    margin-top:20px;
+    display:none;
     background:#0f172a;
     padding:15px;
-    border-radius:12px;
-    display:none;
+    border-radius:10px;
 }
 
 .result a{
@@ -84,21 +68,6 @@ button:hover{
     word-break:break-all;
 }
 
-.copy-btn{
-    margin-top:15px;
-    background:#10b981;
-}
-
-.copy-btn:hover{
-    background:#059669;
-}
-
-.footer{
-    margin-top:20px;
-    text-align:center;
-    color:#94a3b8;
-    font-size:13px;
-}
 </style>
 </head>
 
@@ -106,135 +75,170 @@ button:hover{
 
 <div class="container">
 
-    <h1>ShortLink</h1>
+<h1>ShortLink App</h1>
 
-    <p class="desc">
-        Penyingkat tautan modern untuk GitHub Pages
-    </p>
+<input 
+type="url" 
+id="urlInput"
+placeholder="Masukkan URL panjang..."
+>
 
-    <input 
-        type="url" 
-        id="longUrl" 
-        placeholder="Masukkan URL panjang..."
-    />
+<button onclick="createShortLink()">
+Shorten URL
+</button>
 
-    <button onclick="shortenUrl()">
-        Shorten URL
-    </button>
+<div class="result" id="resultBox">
 
-    <div class="result" id="resultBox">
+<p>Short URL:</p>
 
-        <p>Link Pendek:</p>
-
-        <a href="#" target="_blank" id="shortLink"></a>
-
-        <button class="copy-btn" onclick="copyLink()">
-            Copy Link
-        </button>
-
-    </div>
-
-    <div class="footer">
-        Web App Shortener • GitHub Ready
-    </div>
+<a href="#" target="_blank" id="shortUrl"></a>
 
 </div>
 
-<script>
+</div>
 
-function generateCode(length = 6){
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
+<!-- Firebase -->
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getDatabase,
+    ref,
+    set,
+    get,
+    child
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+
+/* GANTI DENGAN CONFIG FIREBASE KAMU */
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyAFEqtDXNJI-O1Yn8atXjuDCAGRoQB3Y2Q",
+  authDomain: "teknodia.firebaseapp.com",
+  projectId: "teknodia",
+  storageBucket: "teknodia.firebasestorage.app",
+  messagingSenderId: "4635381861",
+  appId: "1:4635381861:web:d3a7b001d17fca9e37b68c",
+  measurementId: "G-WVXTM4Y951"
+
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+
+function randomCode(length = 6){
+
+    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    let result = "";
 
     for(let i = 0; i < length; i++){
+
         result += chars.charAt(
             Math.floor(Math.random() * chars.length)
         );
+
     }
 
     return result;
 }
 
-function shortenUrl(){
+window.createShortLink = async function(){
 
-    const urlInput = document.getElementById('longUrl');
-    const longUrl = urlInput.value.trim();
+    const url = document.getElementById("urlInput").value.trim();
 
-    if(!longUrl){
-        alert('Masukkan URL terlebih dahulu!');
+    if(!url){
+
+        alert("Masukkan URL!");
+
         return;
     }
 
-    // Validasi URL
     try{
-        new URL(longUrl);
+
+        new URL(url);
+
     }catch{
-        alert('URL tidak valid!');
+
+        alert("URL tidak valid!");
+
         return;
     }
 
-    const shortCode = generateCode();
+    const code = randomCode();
 
-    // Simpan ke localStorage
-    localStorage.setItem(shortCode, longUrl);
+    await set(
+        ref(db, "links/" + code),
+        {
+            url: url
+        }
+    );
 
-    // URL github pages
-    const baseUrl = window.location.origin + window.location.pathname;
+    const shortLink =
+        window.location.origin +
+        window.location.pathname +
+        "?s=" + code;
 
-    const shortUrl = `${baseUrl}?s=${shortCode}`;
+    document.getElementById("resultBox").style.display = "block";
 
-    document.getElementById('resultBox').style.display = 'block';
+    const shortUrl = document.getElementById("shortUrl");
 
-    const shortLink = document.getElementById('shortLink');
+    shortUrl.href = shortLink;
 
-    shortLink.href = shortUrl;
-    shortLink.innerText = shortUrl;
-}
+    shortUrl.innerText = shortLink;
 
-// Redirect otomatis
-(function(){
+};
+
+async function redirectLink(){
 
     const params = new URLSearchParams(window.location.search);
 
-    const shortCode = params.get('s');
+    const code = params.get("s");
 
-    if(shortCode){
+    if(!code) return;
 
-        const originalUrl = localStorage.getItem(shortCode);
+    const dbRef = ref(db);
 
-        if(originalUrl){
-            window.location.href = originalUrl;
-        }else{
-            document.body.innerHTML = `
-                <div style="
-                    display:flex;
-                    justify-content:center;
-                    align-items:center;
-                    height:100vh;
-                    background:#0f172a;
-                    color:white;
-                    font-family:Arial;
-                    flex-direction:column;
-                ">
-                    <h1>404</h1>
-                    <p>Link tidak ditemukan</p>
-                </div>
-            `;
-        }
+    const snapshot = await get(
+        child(dbRef, "links/" + code)
+    );
+
+    if(snapshot.exists()){
+
+        const data = snapshot.val();
+
+        window.location.href = data.url;
+
+    }else{
+
+        document.body.innerHTML = `
+            <div style="
+                color:white;
+                font-family:Arial;
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                height:100vh;
+                flex-direction:column;
+                background:#0f172a;
+            ">
+                <h1>404</h1>
+                <p>Link tidak ditemukan</p>
+            </div>
+        `;
+
     }
 
-})();
-
-function copyLink(){
-
-    const text = document.getElementById('shortLink').innerText;
-
-    navigator.clipboard.writeText(text);
-
-    alert('Link berhasil dicopy!');
 }
+
+redirectLink();
 
 </script>
 
 </body>
 </html>
+```
