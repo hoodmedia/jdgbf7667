@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Redirecting...</title>
+    <script>
+        // --- DAFTAR LINK KAMU DI SINI ---
+        const urls = {
+            "fb": "https://facebook.com/username_kamu",
+            "ig": "https://instagram.com/username_kamu",
+            "web": "https://blog-pribadi-kamu.com",
+            "portfolio": "https://linkedin.com/in/username_kamu"
+        };
+        // --------------------------------
+
+        // Mengambil keyword dari URL (misal: username.github.io/go/ig -> mengambil "ig")
+        const path = window.location.pathname.replace(/\/$/, "").split("/").pop();
+
+        // Cek apakah keyword ada di daftar
+        if (urls[path]) {
+            window.location.href = urls[path];
+        } else {
+            // Jika link tidak terdaftar, arahkan ke halaman utama atau tampilkan pesan
+            document.body.innerHTML = "<h1>Link tidak ditemukan!</h1><p>Kamu akan dialihkan ke halaman utama...</p>";
+            setTimeout(() => {
+                window.location.href = "https://" + window.location.hostname;
+            }, 3000);
+        }
+    </script>
+</head>
+<body>
+    <p>Sedang mengalihkan, mohon tunggu...</p>
+</body>
+</html>
