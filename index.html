@@ -1,66 +1,92 @@
-```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Firebase URL Shortener</title>
+<title>ShortLink Premium</title>
 
 <style>
 
-body{
+*{
     margin:0;
-    font-family:Arial;
-    background:#0f172a;
-    color:white;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:
+    linear-gradient(135deg,#020617,#0f172a,#1e293b);
+    min-height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
-    min-height:100vh;
-    padding:20px;
+    overflow:hidden;
+    color:white;
 }
 
 .container{
     width:100%;
-    max-width:500px;
-    background:#1e293b;
-    padding:30px;
-    border-radius:20px;
+    max-width:450px;
+    background:rgba(255,255,255,0.05);
+    backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:25px;
+    padding:35px;
+    box-shadow:
+    0 0 30px rgba(0,0,0,0.4);
 }
 
 h1{
     text-align:center;
+    margin-bottom:10px;
+    font-size:38px;
+}
+
+.desc{
+    text-align:center;
+    color:#cbd5e1;
+    margin-bottom:25px;
 }
 
 input{
     width:100%;
-    padding:15px;
-    margin-top:15px;
+    padding:16px;
     border:none;
-    border-radius:10px;
     outline:none;
-    font-size:16px;
+    border-radius:14px;
+    margin-bottom:15px;
+    background:#ffffff;
+    font-size:15px;
 }
 
 button{
     width:100%;
-    padding:15px;
-    margin-top:15px;
+    padding:16px;
     border:none;
-    border-radius:10px;
-    background:#3b82f6;
+    border-radius:14px;
+    background:linear-gradient(
+        135deg,
+        #3b82f6,
+        #2563eb
+    );
     color:white;
-    cursor:pointer;
     font-size:16px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    transform:translateY(-2px);
 }
 
 .result{
     margin-top:20px;
+    background:rgba(0,0,0,0.3);
+    padding:18px;
+    border-radius:14px;
     display:none;
-    background:#0f172a;
-    padding:15px;
-    border-radius:10px;
 }
 
 .result a{
@@ -68,17 +94,73 @@ button{
     word-break:break-all;
 }
 
+.redirect-box{
+    text-align:center;
+}
+
+.loader{
+    width:90px;
+    height:90px;
+    border:6px solid rgba(255,255,255,0.1);
+    border-top:6px solid #3b82f6;
+    border-radius:50%;
+    margin:0 auto 25px;
+    animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+    100%{
+        transform:rotate(360deg);
+    }
+}
+
+.progress{
+    width:100%;
+    height:10px;
+    background:rgba(255,255,255,0.1);
+    border-radius:20px;
+    overflow:hidden;
+    margin-top:25px;
+}
+
+.bar{
+    height:100%;
+    width:0%;
+    background:linear-gradient(
+        90deg,
+        #38bdf8,
+        #2563eb
+    );
+    animation:load 4s linear forwards;
+}
+
+@keyframes load{
+    100%{
+        width:100%;
+    }
+}
+
+.small{
+    margin-top:15px;
+    color:#94a3b8;
+    font-size:14px;
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="container" id="mainContainer">
 
-<h1>ShortLink App</h1>
+<h1>ShortLink</h1>
 
-<input 
-type="url" 
+<p class="desc">
+Penyingkat tautan modern 🚀
+</p>
+
+<input
+type="url"
 id="urlInput"
 placeholder="Masukkan URL panjang..."
 >
@@ -91,28 +173,26 @@ Shorten URL
 
 <p>Short URL:</p>
 
+<br>
+
 <a href="#" target="_blank" id="shortUrl"></a>
 
 </div>
 
 </div>
 
-<!-- Firebase -->
-
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
-    getDatabase,
-    ref,
-    set,
-    get,
-    child
+getDatabase,
+ref,
+set,
+get,
+child
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-
-/* GANTI DENGAN CONFIG FIREBASE KAMU */
 
 const firebaseConfig = {
 
@@ -132,106 +212,137 @@ const db = getDatabase(app);
 
 function randomCode(length = 6){
 
-    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const chars =
+"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-    let result = "";
+let result = "";
 
-    for(let i = 0; i < length; i++){
+for(let i=0;i<length;i++){
 
-        result += chars.charAt(
-            Math.floor(Math.random() * chars.length)
-        );
+result += chars.charAt(
+Math.floor(Math.random()*chars.length)
+);
 
-    }
+}
 
-    return result;
+return result;
+
 }
 
 window.createShortLink = async function(){
 
-    const url = document.getElementById("urlInput").value.trim();
+const url =
+document.getElementById("urlInput").value.trim();
 
-    if(!url){
+if(!url){
 
-        alert("Masukkan URL!");
+alert("Masukkan URL!");
+return;
 
-        return;
-    }
+}
 
-    try{
+try{
 
-        new URL(url);
+new URL(url);
 
-    }catch{
+}catch{
 
-        alert("URL tidak valid!");
+alert("URL tidak valid!");
+return;
 
-        return;
-    }
+}
 
-    const code = randomCode();
+const code = randomCode();
 
-    await set(
-        ref(db, "links/" + code),
-        {
-            url: url
-        }
-    );
+await set(
+ref(db,"links/"+code),
+{
+url:url
+}
+);
 
-    const shortLink =
-        window.location.origin +
-        window.location.pathname +
-        "?s=" + code;
+const shortLink =
+window.location.origin +
+window.location.pathname +
+"?s="+code;
 
-    document.getElementById("resultBox").style.display = "block";
+document.getElementById(
+"resultBox"
+).style.display = "block";
 
-    const shortUrl = document.getElementById("shortUrl");
+const shortUrl =
+document.getElementById("shortUrl");
 
-    shortUrl.href = shortLink;
+shortUrl.href = shortLink;
 
-    shortUrl.innerText = shortLink;
+shortUrl.innerText = shortLink;
 
 };
 
 async function redirectLink(){
 
-    const params = new URLSearchParams(window.location.search);
+const params =
+new URLSearchParams(
+window.location.search
+);
 
-    const code = params.get("s");
+const code = params.get("s");
 
-    if(!code) return;
+if(!code) return;
 
-    const dbRef = ref(db);
+document.getElementById(
+"mainContainer"
+).innerHTML = `
 
-    const snapshot = await get(
-        child(dbRef, "links/" + code)
-    );
+<div class="redirect-box">
 
-    if(snapshot.exists()){
+<div class="loader"></div>
 
-        const data = snapshot.val();
+<h1>Preparing Link...</h1>
 
-        window.location.href = data.url;
+<p class="small">
+Mohon tunggu sebentar 🚀
+</p>
 
-    }else{
+<div class="progress">
+<div class="bar"></div>
+</div>
 
-        document.body.innerHTML = `
-            <div style="
-                color:white;
-                font-family:Arial;
-                display:flex;
-                justify-content:center;
-                align-items:center;
-                height:100vh;
-                flex-direction:column;
-                background:#0f172a;
-            ">
-                <h1>404</h1>
-                <p>Link tidak ditemukan</p>
-            </div>
-        `;
+</div>
 
-    }
+`;
+
+const dbRef = ref(db);
+
+const snapshot = await get(
+child(dbRef,"links/"+code)
+);
+
+if(snapshot.exists()){
+
+const data = snapshot.val();
+
+setTimeout(()=>{
+
+window.location.href = data.url;
+
+},4000);
+
+}else{
+
+document.getElementById(
+"mainContainer"
+).innerHTML = `
+
+<h1>404</h1>
+
+<p style="text-align:center;margin-top:15px;">
+Link tidak ditemukan
+</p>
+
+`;
+
+}
 
 }
 
@@ -241,4 +352,3 @@ redirectLink();
 
 </body>
 </html>
-```
